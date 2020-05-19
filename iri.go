@@ -81,8 +81,8 @@ func (iri IRI) Path() string {
 
 Compact converts IRI to the string (compact representation)
 */
-func (iri IRI) Compact() Compact {
-	return iri.ID
+func (iri IRI) Compact() *Compact {
+	return &iri.ID
 }
 
 /*
