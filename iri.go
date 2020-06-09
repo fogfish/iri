@@ -13,7 +13,103 @@ import (
 
 // Thing is "interface tag" allows usage of IRI abstraction in other interfaces
 type Thing interface {
-	Identity() IRI
+	Identity() ID
+}
+
+/*
+
+ID is type tagging built over IRI type, unique identity of a thing.
+
+  type MyStruct struct {
+		iri.ID
+	}
+*/
+type ID struct {
+	IRI IRI `dynamodbav:"id" json:"id"`
+}
+
+/*
+
+New parses a compact IRI string
+*/
+func New(iri string, args ...interface{}) ID {
+	if len(args) > 0 {
+		return ID{IRI: NewIRI(fmt.Sprintf(iri, args...))}
+	}
+
+	return ID{IRI: NewIRI(iri)}
+}
+
+/*
+
+Prefix return IRI prefix
+*/
+func (iri ID) Prefix(rank ...int) string {
+	return iri.IRI.Prefix(rank...)
+}
+
+/*
+
+Suffix return IRI suffix
+*/
+func (iri ID) Suffix(rank ...int) string {
+	return iri.IRI.Suffix(rank...)
+}
+
+/*
+
+Parent returns a IRI that is prefix of this one
+*/
+func (iri ID) Parent(rank ...int) ID {
+	return ID{IRI: iri.IRI.Parent(rank...)}
+}
+
+/*
+
+Heir returns a IRI that descendant of this one.
+*/
+func (iri ID) Heir(segment string) ID {
+	return ID{IRI: iri.IRI.Heir(segment)}
+}
+
+/*
+
+Path converts IRI to the path, joins IRI segments
+*/
+func (iri ID) Path() string {
+	return path.Join(iri.IRI.Seq...)
+}
+
+/*
+
+ToIRI converts ID to IRI type
+*/
+func (iri ID) ToIRI() *IRI {
+	return &iri.IRI
+}
+
+/*
+
+Identity return unique identity, required by Thing interface
+*/
+func (iri ID) Identity() ID {
+	return iri
+}
+
+/*
+
+Eq return true if IRI equals
+*/
+func (iri ID) Eq(x ID) bool {
+	return iri.IRI.Eq(x.IRI)
+}
+
+/*
+
+Segments returns segments of IRI
+*/
+func (iri ID) Segments() []string {
+	return iri.IRI.Segments()
 }
 
 /*
@@ -22,107 +118,15 @@ IRI is Internationalized Resource Identifier
 https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier
 */
 type IRI struct {
-	ID Compact `dynamodbav:"id" json:"id"`
-}
-
-/*
-
-New parses a compact IRI string
-*/
-func New(iri string, args ...interface{}) IRI {
-	if len(args) > 0 {
-		return IRI{ID: NewCompact(fmt.Sprintf(iri, args...))}
-	}
-
-	return IRI{ID: NewCompact(iri)}
-}
-
-/*
-
-Prefix return IRI prefix
-*/
-func (iri IRI) Prefix(rank ...int) string {
-	return iri.ID.Prefix(rank...)
-}
-
-/*
-
-Suffix return IRI suffix
-*/
-func (iri IRI) Suffix(rank ...int) string {
-	return iri.ID.Suffix(rank...)
-}
-
-/*
-
-Parent returns a IRI that is prefix of this one
-*/
-func (iri IRI) Parent(rank ...int) IRI {
-	return IRI{ID: iri.ID.Parent(rank...)}
-}
-
-/*
-
-Heir returns a IRI that descendant of this one.
-*/
-func (iri IRI) Heir(segment string) IRI {
-	return IRI{ID: iri.ID.Heir(segment)}
-}
-
-/*
-
-Path converts IRI to the path, joins IRI segments
-*/
-func (iri IRI) Path() string {
-	return path.Join(iri.ID.Seq...)
-}
-
-/*
-
-Compact converts IRI to the string (compact representation)
-*/
-func (iri IRI) Compact() *Compact {
-	return &iri.ID
-}
-
-/*
-
-Identity return unique identity
-*/
-func (iri IRI) Identity() IRI {
-	return iri
-}
-
-/*
-
-Eq return true if IRI equals
-*/
-func (iri IRI) Eq(x IRI) bool {
-	return iri.ID.Eq(x.ID)
-}
-
-/*
-
-Segments returns segments of IRI
-*/
-func (iri IRI) Segments() []string {
-	return iri.ID.Segments()
-}
-
-/*
-
-Compact is a compact (prefix:suffix) representation of IRI
-*/
-type Compact struct {
 	Seq []string
 }
 
 /*
 
-NewCompact builds compact IRI from string
+NewIRI builds compact IRI from string
 */
-func NewCompact(iri string) Compact {
-	return Compact{
+func NewIRI(iri string) IRI {
+	return IRI{
 		Seq: strings.Split(iri, ":"),
 	}
 }
@@ -131,7 +135,7 @@ func NewCompact(iri string) Compact {
 
 Prefix return IRI prefix
 */
-func (iri Compact) Prefix(rank ...int) string {
+func (iri IRI) Prefix(rank ...int) string {
 	r := 1
 	if len(rank) > 0 {
 		r = rank[0]
@@ -153,7 +157,7 @@ func (iri Compact) Prefix(rank ...int) string {
 
 Suffix return IRI suffix
 */
-func (iri Compact) Suffix(rank ...int) string {
+func (iri IRI) Suffix(rank ...int) string {
 	r := 1
 	if len(rank) > 0 {
 		r = rank[0]
@@ -175,7 +179,7 @@ func (iri Compact) Suffix(rank ...int) string {
 
 Parent returns a IRI that is prefix of this one
 */
-func (iri Compact) Parent(rank ...int) Compact {
+func (iri IRI) Parent(rank ...int) IRI {
 	r := 1
 	if len(rank) > 0 {
 		r = rank[0]
@@ -183,29 +187,29 @@ func (iri Compact) Parent(rank ...int) Compact {
 
 	n := len(iri.Seq) - r
 	if n <= 0 {
-		return Compact{Seq: []string{""}}
+		return IRI{Seq: []string{""}}
 	}
 
-	return Compact{Seq: append([]string{}, iri.Seq[:n]...)}
+	return IRI{Seq: append([]string{}, iri.Seq[:n]...)}
 }
 
 /*
 
 Heir returns a IRI that descendant of this one.
 */
-func (iri Compact) Heir(segment string) Compact {
+func (iri IRI) Heir(segment string) IRI {
 	if len(iri.Seq) == 1 && iri.Seq[0] == "" {
-		return Compact{Seq: []string{segment}}
+		return IRI{Seq: []string{segment}}
 	}
 
-	return Compact{Seq: append(append([]string{}, iri.Seq...), segment)}
+	return IRI{Seq: append(append([]string{}, iri.Seq...), segment)}
 }
 
 /*
 
 String ...
 */
-func (iri Compact) String() string {
+func (iri IRI) String() string {
 	return strings.Join(iri.Seq, ":")
 }
 
@@ -213,7 +217,7 @@ func (iri Compact) String() string {
 
 Eq return true if two IRI equals
 */
-func (iri Compact) Eq(x Compact) bool {
+func (iri IRI) Eq(x IRI) bool {
 	if len(iri.Seq) != len(x.Seq) {
 		return false
 	}
@@ -231,7 +235,7 @@ func (iri Compact) Eq(x Compact) bool {
 
 Segments return elements
 */
-func (iri Compact) Segments() []string {
+func (iri IRI) Segments() []string {
 	return iri.Seq
 }
 
@@ -239,7 +243,7 @@ func (iri Compact) Segments() []string {
 
 MarshalJSON `IRI ⟼ "prefix:suffix"`
 */
-func (iri Compact) MarshalJSON() ([]byte, error) {
+func (iri IRI) MarshalJSON() ([]byte, error) {
 	if len(iri.Seq) == 0 {
 		return json.Marshal("")
 	}
@@ -251,14 +255,14 @@ func (iri Compact) MarshalJSON() ([]byte, error) {
 
 UnmarshalJSON `"prefix:suffix" ⟼ IRI`
 */
-func (iri *Compact) UnmarshalJSON(b []byte) error {
+func (iri *IRI) UnmarshalJSON(b []byte) error {
 	var path string
 	err := json.Unmarshal(b, &path)
 	if err != nil {
 		return err
 	}
 
-	*iri = New(path).ID
+	*iri = New(path).IRI
 	return nil
 }
 
@@ -266,7 +270,7 @@ func (iri *Compact) UnmarshalJSON(b []byte) error {
 
 MarshalDynamoDBAttributeValue `IRI ⟼ "prefix/suffix"`
 */
-func (iri Compact) MarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) error {
+func (iri IRI) MarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) error {
 	if len(iri.Seq) == 0 {
 		av.NULL = aws.Bool(true)
 		return nil
@@ -286,7 +290,7 @@ func (iri Compact) MarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) er
 
 UnmarshalDynamoDBAttributeValue `"prefix/suffix" ⟼ IRI`
 */
-func (iri *Compact) UnmarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) error {
-	*iri = NewCompact(aws.StringValue(av.S))
+func (iri *IRI) UnmarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) error {
+	*iri = NewIRI(aws.StringValue(av.S))
 	return nil
 }

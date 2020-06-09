@@ -10,39 +10,39 @@ import (
 )
 
 var (
-	r0 iri.IRI = iri.New("")
-	r1 iri.IRI = iri.New("a")
-	r2 iri.IRI = iri.New("a:b")
-	r3 iri.IRI = iri.New("a:b:c")
-	r4 iri.IRI = iri.New("a:b:c:d")
-	r5 iri.IRI = iri.New("a:b:c:d:e")
+	r0 iri.ID = iri.New("")
+	r1 iri.ID = iri.New("a")
+	r2 iri.ID = iri.New("a:b")
+	r3 iri.ID = iri.New("a:b:c")
+	r4 iri.ID = iri.New("a:b:c:d")
+	r5 iri.ID = iri.New("a:b:c:d:e")
 )
 
 func TestIRI(t *testing.T) {
-	test := map[*iri.IRI][]string{
-		&r0: []string{""},
-		&r1: []string{"a"},
-		&r2: []string{"a", "b"},
-		&r3: []string{"a", "b", "c"},
-		&r4: []string{"a", "b", "c", "d"},
-		&r5: []string{"a", "b", "c", "d", "e"},
+	test := map[*iri.ID][]string{
+		&r0: {""},
+		&r1: {"a"},
+		&r2: {"a", "b"},
+		&r3: {"a", "b", "c"},
+		&r4: {"a", "b", "c", "d"},
+		&r5: {"a", "b", "c", "d", "e"},
 	}
 
 	for k, v := range test {
 		it.Ok(t).
-			If(*k).Should().Equal(iri.IRI{iri.Compact{v}}).
+			If(*k).Should().Equal(iri.ID{iri.IRI{v}}).
 			If(k.Segments()).Should().Equal(v)
 	}
 }
 
 func TestPrefix(t *testing.T) {
-	test := map[*iri.IRI][]string{
-		&r0: []string{"", "", "", "", "", ""},
-		&r1: []string{"a", "a", "", "", "", ""},
-		&r2: []string{"a", "a", "", "", "", ""},
-		&r3: []string{"a:b", "a:b", "a", "", "", ""},
-		&r4: []string{"a:b:c", "a:b:c", "a:b", "a", "", ""},
-		&r5: []string{"a:b:c:d", "a:b:c:d", "a:b:c", "a:b", "a", ""},
+	test := map[*iri.ID][]string{
+		&r0: {"", "", "", "", "", ""},
+		&r1: {"a", "a", "", "", "", ""},
+		&r2: {"a", "a", "", "", "", ""},
+		&r3: {"a:b", "a:b", "a", "", "", ""},
+		&r4: {"a:b:c", "a:b:c", "a:b", "a", "", ""},
+		&r5: {"a:b:c:d", "a:b:c:d", "a:b:c", "a:b", "a", ""},
 	}
 
 	for k, v := range test {
@@ -57,13 +57,13 @@ func TestPrefix(t *testing.T) {
 }
 
 func TestSuffix(t *testing.T) {
-	test := map[*iri.IRI][]string{
-		&r0: []string{"", "", "", "", "", ""},
-		&r1: []string{"", "", "", "", "", ""},
-		&r2: []string{"b", "b", "a:b", "a:b", "a:b", "a:b"},
-		&r3: []string{"c", "c", "b:c", "a:b:c", "a:b:c", "a:b:c"},
-		&r4: []string{"d", "d", "c:d", "b:c:d", "a:b:c:d", "a:b:c:d"},
-		&r5: []string{"e", "e", "d:e", "c:d:e", "b:c:d:e", "a:b:c:d:e"},
+	test := map[*iri.ID][]string{
+		&r0: {"", "", "", "", "", ""},
+		&r1: {"", "", "", "", "", ""},
+		&r2: {"b", "b", "a:b", "a:b", "a:b", "a:b"},
+		&r3: {"c", "c", "b:c", "a:b:c", "a:b:c", "a:b:c"},
+		&r4: {"d", "d", "c:d", "b:c:d", "a:b:c:d", "a:b:c:d"},
+		&r5: {"e", "e", "d:e", "c:d:e", "b:c:d:e", "a:b:c:d:e"},
 	}
 
 	for k, v := range test {
@@ -78,13 +78,13 @@ func TestSuffix(t *testing.T) {
 }
 
 func TestParent(t *testing.T) {
-	test := map[*iri.IRI][]iri.IRI{
-		&r0: []iri.IRI{r0, r0, r0, r0, r0, r0},
-		&r1: []iri.IRI{r0, r0, r0, r0, r0, r0},
-		&r2: []iri.IRI{r1, r1, r0, r0, r0, r0},
-		&r3: []iri.IRI{r2, r2, r1, r0, r0, r0},
-		&r4: []iri.IRI{r3, r3, r2, r1, r0, r0},
-		&r5: []iri.IRI{r4, r4, r3, r2, r1, r0},
+	test := map[*iri.ID][]iri.ID{
+		&r0: {r0, r0, r0, r0, r0, r0},
+		&r1: {r0, r0, r0, r0, r0, r0},
+		&r2: {r1, r1, r0, r0, r0, r0},
+		&r3: {r2, r2, r1, r0, r0, r0},
+		&r4: {r3, r3, r2, r1, r0, r0},
+		&r5: {r4, r4, r3, r2, r1, r0},
 	}
 
 	for k, v := range test {
@@ -108,7 +108,7 @@ func TestHeir(t *testing.T) {
 }
 
 func TestPath(t *testing.T) {
-	test := map[*iri.IRI]string{
+	test := map[*iri.ID]string{
 		&r0: "",
 		&r1: "a",
 		&r2: "a/b",
@@ -132,7 +132,7 @@ func TestImmutable(t *testing.T) {
 }
 
 func TestEq(t *testing.T) {
-	test := []iri.IRI{r0, r1, r2, r3, r4, r5}
+	test := []iri.ID{r0, r1, r2, r3, r4, r5}
 
 	for _, v := range test {
 		it.Ok(t).If(v.Eq(v)).Should().Equal(true)
@@ -141,7 +141,7 @@ func TestEq(t *testing.T) {
 
 func TestNotEq(t *testing.T) {
 	r6 := iri.New("1:2:3:4:5:6")
-	test := []iri.IRI{r0, r1, r2, r3, r4, r5}
+	test := []iri.ID{r0, r1, r2, r3, r4, r5}
 
 	for _, v := range test {
 		it.Ok(t).
@@ -152,15 +152,15 @@ func TestNotEq(t *testing.T) {
 
 func TestJSON(t *testing.T) {
 	type Struct struct {
-		iri.IRI
+		iri.ID
 		Title string `json:"title"`
 	}
 
 	test := map[*Struct]string{
-		&Struct{IRI: iri.New(""), Title: "t"}:      "{\"id\":\"\",\"title\":\"t\"}",
-		&Struct{IRI: iri.New("a"), Title: "t"}:     "{\"id\":\"a\",\"title\":\"t\"}",
-		&Struct{IRI: iri.New("a:b"), Title: "t"}:   "{\"id\":\"a:b\",\"title\":\"t\"}",
-		&Struct{IRI: iri.New("a:b:c"), Title: "t"}: "{\"id\":\"a:b:c\",\"title\":\"t\"}",
+		{ID: iri.New(""), Title: "t"}:      "{\"id\":\"\",\"title\":\"t\"}",
+		{ID: iri.New("a"), Title: "t"}:     "{\"id\":\"a\",\"title\":\"t\"}",
+		{ID: iri.New("a:b"), Title: "t"}:   "{\"id\":\"a:b\",\"title\":\"t\"}",
+		{ID: iri.New("a:b:c"), Title: "t"}: "{\"id\":\"a:b:c\",\"title\":\"t\"}",
 	}
 
 	for eg, expect := range test {
@@ -179,15 +179,15 @@ func TestJSON(t *testing.T) {
 
 func TestDynamo(t *testing.T) {
 	type Struct struct {
-		iri.IRI
+		iri.ID
 		Title string `dynamodbav:"title"`
 	}
 
 	test := []Struct{
-		Struct{IRI: iri.New(""), Title: "t"},
-		Struct{IRI: iri.New("a"), Title: "t"},
-		Struct{IRI: iri.New("a:b"), Title: "t"},
-		Struct{IRI: iri.New("a:b:c"), Title: "t"},
+		{ID: iri.New(""), Title: "t"},
+		{ID: iri.New("a"), Title: "t"},
+		{ID: iri.New("a:b"), Title: "t"},
+		{ID: iri.New("a:b:c"), Title: "t"},
 	}
 
 	for _, eg := range test {
@@ -204,16 +204,16 @@ func TestDynamo(t *testing.T) {
 }
 
 func TestTypeSafe(t *testing.T) {
-	type A struct{ iri.IRI }
-	type B struct{ iri.IRI }
-	type C struct{ iri.IRI }
+	type A struct{ iri.ID }
+	type B struct{ iri.ID }
+	type C struct{ iri.ID }
 
 	a := A{iri.New("a")}
 	b := B{iri.New("a:b")}
 	c := C{b.Heir("c")}
 
 	it.Ok(t).
-		If(a.IRI).Should().Equal(r1).
-		If(b.IRI).Should().Equal(r2).
-		If(c.IRI).Should().Equal(r3)
+		If(a.ID).Should().Equal(r1).
+		If(b.ID).Should().Equal(r2).
+		If(c.ID).Should().Equal(r3)
 }
