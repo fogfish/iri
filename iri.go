@@ -33,11 +33,7 @@ type ID struct {
 New parses a compact IRI string
 */
 func New(iri string, args ...interface{}) ID {
-	if len(args) > 0 {
-		return ID{IRI: NewIRI(fmt.Sprintf(iri, args...))}
-	}
-
-	return ID{IRI: NewIRI(iri)}
+	return ID{IRI: NewIRI(iri, args...)}
 }
 
 /*
@@ -125,9 +121,15 @@ type IRI struct {
 
 NewIRI builds compact IRI from string
 */
-func NewIRI(iri string) IRI {
+func NewIRI(iri string, args ...interface{}) IRI {
+	val := iri
+
+	if len(args) > 0 {
+		val = fmt.Sprintf(iri, args...)
+	}
+
 	return IRI{
-		Seq: strings.Split(iri, ":"),
+		Seq: strings.Split(val, ":"),
 	}
 }
 
